@@ -399,7 +399,7 @@ export default {
     }
   },
 
-  /** EV 资源扩展名：本作事件图（evcg*/aban*/large_evcg*）统一为 .png */
+  // EV 资源扩展名：本作事件图（evcg/aban/large_evcg）统一为 .png
   resolveEVSrc(name) {
     if (!name) return ""
     return "/common/ev/" + name + ".png"
