@@ -1,0 +1,232 @@
+<template>
+  <div class="page">
+    <!-- 顶部标题 -->
+    <div class="header">
+      <text class="header-title">后日谈</text>
+    </div>
+
+    <!-- 后日谈列表 -->
+    <scroll scroll-y="true" class="list">
+      <div
+        class="card"
+        for="{{ (index, item) in afterStories }}"
+        @click="handlePick(index)"
+      >
+        <div class="card-content">
+          <div class="card-header-row">
+            <text class="card-title">{{ item.name }}线</text>
+            <text class="card-state {{ isUnlocked(item.name) ? 'state-open' : 'state-lock' }}">{{ isUnlocked(item.name) ? '可阅读' : '未解锁' }}</text>
+          </div>
+          <text class="card-desc">通关「{{ item.name }}」主线后解锁后日谈章节</text>
+        </div>
+      </div>
+    </scroll>
+
+    <!-- 底部返回 -->
+    <div class="footer" @click="goBack">
+      <text class="footer-text">返回</text>
+    </div>
+  </div>
+</template>
+
+<script>
+import storage from "@system.storage"
+import router from "@system.router"
+import prompt from "@system.prompt"
+import {CLEARS_KEY, AFTER_STORIES} from "../../common/constants.js"
+import {vibrateShort} from "../../common/vibrate.js"
+
+export default {
+  data: {
+    afterStories: AFTER_STORIES,
+    clears: []
+  },
+
+  onInit() {
+    this.loadClears()
+  },
+
+  onShow() {
+    this.loadClears()
+  },
+
+  loadClears() {
+    storage.get({
+      key: CLEARS_KEY,
+      success: (data) => {
+        if (data) {
+          try {
+            const parsed = JSON.parse(data)
+            this.clears = Array.isArray(parsed) ? parsed : []
+          } catch (e) {
+            this.clears = []
+          }
+        }
+      }
+    })
+  },
+
+  isUnlocked(name) {
+    return this.clears.indexOf(name) !== -1
+  },
+
+  handlePick(index) {
+    const item = this.afterStories[index]
+    if (!item) return
+    vibrateShort()
+    if (!this.isUnlocked(item.name)) {
+      prompt.showToast({message: "未解锁：先通关「" + item.name + "」线"})
+      return
+    }
+    this.$app.$def.globalGameState = {
+      _fromAfterStory: { scn: item.scn, from: item.from }
+    }
+    router.push({uri: "/pages/game"})
+  },
+
+  goBack() {
+    vibrateShort()
+    router.back()
+  }
+}
+</script>
+
+<style>
+.page {
+  flex-direction: column;
+  background-color: #000000;
+  width: 100%;
+  height: 100%;
+}
+
+.header {
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  height: 44px;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-title {
+  font-size: 26px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.list {
+  position: absolute;
+  top: 76px;
+  left: 12px;
+  right: 12px;
+  bottom: 72px;
+  flex-direction: column;
+}
+
+.card {
+  width: 100%;
+  min-height: 64px;
+  margin-bottom: 8px;
+  padding: 12px 16px;
+  background-color: #262626;
+  border-radius: 20px;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-content {
+  flex-direction: column;
+  width: 100%;
+}
+
+.card-header-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.card-title {
+  font-size: 19px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.card-state {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.state-open {
+  color: #5ea8ff;
+}
+
+.state-lock {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.card-desc {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
+  lines: 2;
+  text-overflow: ellipsis;
+  line-height: 20px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 16px;
+  left: 12px;
+  right: 12px;
+  height: 48px;
+  background-color: #262626;
+  border-radius: 24px;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-text {
+  font-size: 21px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+/* 方形屏（手环 10 Pro / 9 Pro / 8 Pro，336x480） */
+@media (shape: rect) {
+  .header {
+    top: 13px;
+    height: 28px;
+  }
+  .header-title {
+    font-size: 16px;
+  }
+  .list {
+    top: 48px;
+    bottom: 45px;
+  }
+  .card {
+    min-height: 40px;
+    margin-bottom: 5px;
+    padding: 8px 10px;
+    border-radius: 13px;
+  }
+  .card-title {
+    font-size: 12px;
+  }
+  .card-state {
+    font-size: 9px;
+  }
+  .card-desc {
+    font-size: 10px;
+    line-height: 13px;
+  }
+  .footer {
+    bottom: 10px;
+    height: 30px;
+    border-radius: 15px;
+  }
+  .footer-text {
+    font-size: 13px;
+  }
+}
+</style>
