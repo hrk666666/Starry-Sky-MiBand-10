@@ -410,7 +410,7 @@ await test("resourceManager 预加载清单", () => {
     [8, "bgm1", "bgm", "loop"]
   ])
   deepEq(list, [
-    "/common/bg/bg1.jpg",
+    "/common/bg/bg1.png",
     "/common/sd/sd001.png",
     "/common/ch/hero_happy.png",
     "/common/ch/hero_sad.png"

@@ -70,7 +70,6 @@
         </scroll>
       </div>
 
-      <text class="bottom-time">{{ bottomTime }}</text>
     </div>
 
     <!-- 选项按钮 -->
@@ -111,7 +110,6 @@
       ></image>
 
       <div class="menu-container" @click="stopClick">
-        <text class="menu-time">{{ currentTime }}</text>
         <text class="menu-title">菜单</text>
 
         <scroll scroll-y="true" class="menu-scroll">
@@ -198,15 +196,12 @@ export default {
     displayText: "",
     currentCharIndex: 0,
     showSwipeMenu: false,
-    currentTime: "00:00",
     isUIHidden: false,
     typeWriterTimer: null,
     fxActive: false,
     fxClass: "",
     _fxTimer: null,
 
-    bottomTime: "00:00",
-    bottomTimeTimer: null,
 
     isAutoPlay: false,
     autoPlayTimer: null,
@@ -249,7 +244,6 @@ export default {
     this.clearAutoPlayTimer()
     this.clearPageLongTimer()
     this.clearFFLongPressTimer()
-    this.stopBottomTime()
     if (this._fxTimer) clearTimeout(this._fxTimer)
     if (this._rt) this._rt.destroy()
   },
@@ -260,7 +254,6 @@ export default {
     this.clearAutoPlayTimer()
     this.clearPageLongTimer()
     this.clearFFLongPressTimer()
-    this.stopBottomTime()
   },
 
   onInit() {
@@ -303,7 +296,6 @@ export default {
     }
 
     this.captureOriginalBrightness()
-    this.startBottomTime()
   },
 
   /** 后日谈模式：从指定场景行开始播放，播到结束哨兵自动回主页 */
@@ -620,12 +612,16 @@ export default {
     if (rawText) {
       previewContent = rawText.length > 10 ? rawText.substring(0, 10) + "..." : rawText
     }
+    // Vela 部分固件 new Date() 返回 epoch（1970），此时不写时间，避免存档列表显示 1/1 00:00
+    let dateStr = ""
     const now = new Date()
-    const month = now.getMonth() + 1
-    const day = now.getDate()
-    const hour = now.getHours().toString().padStart(2, "0")
-    const min = now.getMinutes().toString().padStart(2, "0")
-    const dateStr = `${month}/${day} ${hour}:${min}`
+    if (now && now.getFullYear && now.getFullYear() >= 2020) {
+      const month = now.getMonth() + 1
+      const day = now.getDate()
+      const hour = now.getHours().toString().padStart(2, "0")
+      const min = now.getMinutes().toString().padStart(2, "0")
+      dateStr = `${month}/${day} ${hour}:${min}`
+    }
 
     const entry = {
       date: dateStr,
@@ -668,11 +664,6 @@ export default {
 
   handleSwipe() {
     this.showSwipeMenu = true
-    const now = new Date()
-    this.currentTime =
-      now.getHours().toString().padStart(2, "0") +
-      ":" +
-      now.getMinutes().toString().padStart(2, "0")
   },
 
   toggleUIVisibility() {
@@ -683,7 +674,6 @@ export default {
     const willAutoSave = this.autoSaveEnabled && this.settings && this.settings.autoSave !== false
     this.forceAutoSave()
     this.clearAutoPlayTimer()
-    this.stopBottomTime()
     if (willAutoSave) {
       prompt.showToast({ message: "进度已自动保存" })
     }
@@ -718,29 +708,6 @@ export default {
       clearTimeout(this.autoPlayTimer)
       this.autoPlayTimer = null
     }
-  },
-
-  startBottomTime() {
-    this.stopBottomTime()
-    this.updateBottomTime()
-    this.bottomTimeTimer = setInterval(() => {
-      this.updateBottomTime()
-    }, 30000)
-  },
-
-  stopBottomTime() {
-    if (this.bottomTimeTimer) {
-      clearInterval(this.bottomTimeTimer)
-      this.bottomTimeTimer = null
-    }
-  },
-
-  updateBottomTime() {
-    const now = new Date()
-    this.bottomTime =
-      now.getHours().toString().padStart(2, "0") +
-      ":" +
-      now.getMinutes().toString().padStart(2, "0")
   },
 
   vibrateIfEnabled() {
