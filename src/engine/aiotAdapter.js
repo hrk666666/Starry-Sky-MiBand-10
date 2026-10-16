@@ -2,11 +2,17 @@
  * aiotAdapter.js — 小米 Vela 快应用（手环 9/10/11）平台适配
  *
  * 系统模块加载方式说明：
- *  手环 9 / 9 Pro 等旧固件不存在 @app-module/system.audio 模块，
- *  此前在模块顶层无条件加载它，game 页 import 阶段求值异常、
- *  try-catch 覆盖不到，系统兜底重启（现象：点击开始游戏设备必然重启）。
- *  本版本移除 audio 模块加载（手环无扬声器，BGM 本就无声），
- *  file / storage / prompt / vibrator 改回标准 import（上游 9 Pro 原生版验证过的方式）。
+ *  用 Vela 运行时全局 $app_require$ 直接加载系统模块（模块对象本身），
+ *  绕开 webpack 模块解析的两种坑：
+ *   1) 运行时 require("@system.xxx")：部分构建环境（本地 Node v22）生成
+ *      "Cannot find module '@system.file'" fallback → 真机初始化失败；
+ *   2) ESM import xxx from "@system.xxx"：webpack 做 default interop，
+ *      而 Vela 部分系统模块没有 default 导出，运行时得到 null。
+ *  $app_require$("@app-module/system.xxx") 返回模块对象本身。
+ *
+ *  audio 模块特例：手环 9 / 9 Pro / 10 等固件不存在 @app-module/system.audio，
+ *  此前无条件加载会导致 game 页 import 阶段求值异常、系统兜底重启。
+ *  本版本不加载 audio，保留接口桩，引擎调用静默跳过（手环无扬声器，BGM 本就无声）。
  *
  * 适配器统一暴露：
  *  - readScenario(scnId) -> Promise<Array>   读取剧本（引擎唯一的数据入口）
@@ -18,10 +24,22 @@
 import { ResourceManager } from "./resourceManager.js"
 import { findScenario } from "./platformAdapter.js"
 
-import file from "@system.file"
-import storage from "@system.storage"
-import prompt from "@system.prompt"
-import vibrator from "@system.vibrator"
+/**
+ * Vela 运行时加载系统模块（模块对象直出，无 ESM interop）。
+ * 仅被 Vela 运行时加载；Node 测试环境不 import 本文件，访问运行时全局安全。
+ */
+function loadSystemModule(id) {
+  if (typeof $app_require$ === "function") {
+    return $app_require$(id)
+  }
+  return null
+}
+
+// Vela 系统模块 —— 模块对象本身（勿改为 ESM default import）
+const file = loadSystemModule("@app-module/system.file")
+const storage = loadSystemModule("@app-module/system.storage")
+const prompt = loadSystemModule("@app-module/system.prompt")
+const vibrator = loadSystemModule("@app-module/system.vibrator")
 
 // 手环 9/9 Pro/10 均无扬声器、固件无 @system.audio 模块（官方文档亦无此 API）。
 // 保留 audio 接口桩，引擎调用静默跳过，避免任何设备上崩溃。

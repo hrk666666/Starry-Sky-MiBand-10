@@ -410,10 +410,10 @@ await test("resourceManager 预加载清单", () => {
     [8, "bgm1", "bgm", "loop"]
   ])
   deepEq(list, [
-    "/common/bg/bg1.png",
-    "/common/sd/sd001.png",
-    "/common/ch/hero_happy.png",
-    "/common/ch/hero_sad.png"
+    "/common/bg/bg1.jpg",
+    "/common/sd/sd001.jpg",
+    "/common/ch/hero_happy.jpg",
+    "/common/ch/hero_sad.jpg"
   ], "预加载清单（音频不预加载）")
 })
 

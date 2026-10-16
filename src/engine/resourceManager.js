@@ -8,10 +8,10 @@
  */
 
 export const RES_TYPES = {
-  bg: { dir: "bg", ext: "png" },
-  sd: { dir: "sd", ext: "png" },
-  ev: { dir: "ev", ext: "png" },
-  ch: { dir: "ch", ext: "png" },
+  bg: { dir: "bg", ext: "jpg" },
+  sd: { dir: "sd", ext: "jpg" },
+  ev: { dir: "ev", ext: "jpg" },
+  ch: { dir: "ch", ext: "jpg" },
   audio: { dir: "audio", ext: "mp3" }
 }
 

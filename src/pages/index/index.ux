@@ -1,7 +1,7 @@
 <template>
   <div class="page" @swipe="handleSwipe">
     <!-- 背景 -->
-    <image class="bg-image" src="/common/title_bg.png"></image>
+    <image class="bg-image" src="/common/title_bg.jpg" style="object-fit: cover"></image>
 
     <!-- 顶部标题区 -->
     <div class="header">
@@ -220,10 +220,10 @@ export default {
 .bg-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   position: absolute;
   top: 0;
   left: 0;
+  object-fit: cover;
 }
 
 .header {

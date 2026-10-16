@@ -1,6 +1,6 @@
 <template>
   <div class="page" @swipe="swipeBack" @longpress="longPressBack">
-    <image class="bg-image" src="/common/title_bg.png"></image>
+    <image class="bg-image" src="/common/title_bg.jpg" style="object-fit: cover"></image>
 
     <!-- 顶部标题 -->
     <div class="header">
